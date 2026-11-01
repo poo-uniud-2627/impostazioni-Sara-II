@@ -27,8 +27,44 @@ public record Impostazioni(int puntiPerVincere, int scartoMinimo, int velocitaPa
      * non è fra 1 e 10, o se velocitaPalla non è fra 1 e 20 (estremi compresi). Il messaggio
      * dice quale valore è sbagliato e perché.
      */
+    
     public Impostazioni {
-        // scrivete qui
+        
+        if ((puntiPerVincere < 1) || (puntiPerVincere > 99)) {
+            throw new IllegalArgumentException("Punteggio per vincere non valido, Valori ammessi tra 1 e 99 compresi.");
+        }
+          if ((scartoMinimo < 1) || (scartoMinimo > 10)) {
+            throw new IllegalArgumentException("Scarto minimo non valido- Valori ammessi tra 1 e 10 compresi");
+        }
+          if ((velocitaPalla < 1) || (velocitaPalla > 20)) {
+            throw new IllegalArgumentException("Velocità palla non valida. Valori ammessi tra 1 e 20 compresi");
+        }
+    }
+
+    private static boolean numeri_interi(String parametro) {
+        int numero_caratteri = parametro.length();
+        for (int i= 0; i < numero_caratteri; i++) {
+            if ((parametro.charAt(i) < '0') || (parametro.charAt(i) > '9')) {
+                return false;
+            } 
+
+        }
+        return true;
+
+    }
+
+    private static int controlla_parametro(int riga, String riga_corrente) {
+
+        int posizioneUguale = riga_corrente.indexOf("=");
+            String tempString = (riga_corrente.substring(posizioneUguale + 1).trim());
+
+            if(tempString.isEmpty()) {
+                throw new IllegalArgumentException("riga " + (riga+1) + ": Parametro non assegnato");
+            }
+           if (!numeri_interi(tempString)){
+                throw new IllegalArgumentException("riga " + (riga+1) + ": Parametro non numerico");
+            }
+            return Integer.parseInt(tempString);
     }
 
     /**
@@ -41,7 +77,7 @@ public record Impostazioni(int puntiPerVincere, int scartoMinimo, int velocitaPa
      *    al segno = e al valore; le chiavi sono puntiPerVincere, scartoMinimo, velocitaPalla;
      *  - un'impostazione che nelle righe non c'è prende il valore standard;
      *  - il risultato sono le impostazioni lette.
-     * Lancia IllegalArgumentException, con un messaggio che comincia con «riga N: » (N è il numero
+     * Lancia IllegalArgumentException, con un messaggio che comincia con riga N: » (N è il numero
      * della riga, contando da 1 tutte le righe, anche quelle vuote e i commenti), se in una riga:
      *  1. manca il segno = ;
      *  2. la chiave non è una delle tre;
@@ -51,7 +87,87 @@ public record Impostazioni(int puntiPerVincere, int scartoMinimo, int velocitaPa
      * Se ci sono errori in più righe, il messaggio è quello della riga più in alto.
      */
     public static Impostazioni leggi(List<String> righe) {
-        return STANDARD; // scrivete qui
+       int numero_righe = righe.size();
+       boolean trovato_punti_per_vincere = false;
+       boolean trovato_scarto_minimo = false;
+       boolean trovato_velocita_palla = false;
+       int lpuntiPerVincere = 11;
+       int lscartoMinimo = 2;
+       int lvelocitàPalla = 5;
+       
+       
+       for (int i= 0; i < numero_righe; i++) {
+       String riga_corrente = righe.get(i);
+       if (riga_corrente == null) {
+
+       continue;
+
+       }
+
+       riga_corrente = riga_corrente.trim();
+
+
+       if (riga_corrente.isEmpty()) {
+        continue;
+       }
+       
+        if (riga_corrente.startsWith("#")) {
+        continue;
+       }
+
+      if(!riga_corrente.contains("=")) {
+
+       throw new IllegalArgumentException("riga " + (i+1) + ": non contiene l'uguale");
+       }
+
+
+       if ((riga_corrente.contains("puntiPerVincere"))) {
+            if (trovato_punti_per_vincere) {
+                throw new IllegalArgumentException("riga " + (i+1) + ": Punteggio per vincere già assegnato");
+            }
+            lpuntiPerVincere = controlla_parametro(i, riga_corrente);
+
+            if ((lpuntiPerVincere < 1) || (lpuntiPerVincere > 99)) {
+                throw new IllegalArgumentException("riga " + (i+1) + ": Punteggio per vincere non valido, Valori ammessi tra 1 e 99 compresi.");
+            }
+
+             trovato_punti_per_vincere = true;
+    
+       }
+
+         else if ((riga_corrente.contains("scartoMinimo"))) {
+            if (trovato_scarto_minimo) {
+                throw new IllegalArgumentException("riga " + (i+1) + ": Scarto minimo già assegnato");
+            }
+            lscartoMinimo = controlla_parametro(i, riga_corrente);
+            if ((lscartoMinimo < 1) || (lscartoMinimo > 10)) {
+                throw new IllegalArgumentException("riga " + (i+1) + ": Scarto minimo non valido, Valori ammessi tra 1 e 10 compresi.");
+            }
+             trovato_scarto_minimo = true;
+    
+       }
+
+        else if ((riga_corrente.contains("velocitaPalla"))) {
+            if (trovato_velocita_palla) {
+                throw new IllegalArgumentException("riga " + (i+1) + ": Velocità palla già assegnata");
+            }
+            lvelocitàPalla = controlla_parametro(i, riga_corrente);
+            if ((lvelocitàPalla < 1) || (lvelocitàPalla > 20)) {
+                throw new IllegalArgumentException("riga " + (i+1) + ": Velocità palla non valida, Valori ammessi tra 1 e 20 compresi.");
+            }
+
+             trovato_velocita_palla = true;
+       }
+       else {
+        throw new IllegalArgumentException("riga " + (i+1) + ": Chiave errata");
+            }
+       }
+       
+       Impostazioni STANDARD = new Impostazioni(lpuntiPerVincere, lscartoMinimo, lvelocitàPalla);
+
+        
+        return STANDARD; 
+    
     }
 
     /**
